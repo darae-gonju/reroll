@@ -112,6 +112,13 @@
         </a>
     </div>
 
+    <div class="box" style="padding:10px;">
+        <h4 style="color:#bbb; margin:10px 0;">💬 실시간 토론방</h4>
+        <div style="background:#252525; height:450px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#555; overflow:hidden;">
+            <iframe src="https://www3.cbox.ws/box/?boxid=3551977&boxtag=5BHC50" width="100%" height="450" allowtransparency="yes" allow="autoplay" frameborder="0" marginheight="0" marginwidth="0" scrolling="auto"></iframe>    
+        </div>
+    </div>
+
     <footer style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
         <div style="margin-bottom: 20px;">
             <p style="color:#aaa; font-size:0.9rem;">🐛 버그 제보 & 문의</p>
@@ -125,7 +132,7 @@
     <script>
         let currentMode = 2; 
         
-        // [확률 데이터 - 검증 완료]
+        // [확률 데이터]
         const shopOdds = {
             1: [0, 100, 0, 0, 0, 0],
             2: [0, 100, 0, 0, 0, 0],
@@ -139,7 +146,7 @@
             10: [0, 5, 10, 20, 40, 25]  
         };
 
-        // [풀 사이즈 데이터 - 검증 완료]
+        // [풀 사이즈 데이터]
         const poolSizes = { 
             1: 30, 2: 25, 3: 18, 4: 10, 5: 9 
         };
@@ -208,13 +215,11 @@
             let cost = currentMode;
             let maxPool = (currentMode === 2) ? 25 : 18;
 
-            // [남은 장수 계산]
             let remain = maxPool - my - taken;
             if(remain < 0) remain = 0;
 
-            // [목표치까지 필요한 장수]
             let needed = 9 - my; 
-            if (needed < 1) needed = 1; // 이미 3성이면 1장 값 기준(비교용)
+            if (needed < 1) needed = 1; 
 
             let rText = document.getElementById('remain-text');
             rText.innerText = `남은 매물: ${remain}장 (필요: ${needed}장)`;
@@ -223,7 +228,6 @@
             let probA = getUnitProb(lvlA, cost, remain, unlock);
             let probB = getUnitProb(lvlB, cost, remain, unlock);
 
-            // [총 비용 = 1장 비용 * 필요한 장수]
             let costA = getExpGold(probA) * needed;
             let costB = getExpGold(probB) * needed;
 
@@ -231,7 +235,6 @@
             const costNext = document.getElementById('cost-next');
             const diffBox = document.getElementById('diff-display');
 
-            // 매물 부족 예외처리
             if(remain < needed) {
                 costCurr.innerText = "-"; costNext.innerText = "-";
                 diffBox.innerText = `매물이 부족합니다.\n(남은 ${remain}장 < 필요 ${needed}장)`;
@@ -249,12 +252,10 @@
                  diffBox.innerText = "비용 차이가 너무 큽니다.";
                  diffBox.style.color = "#aaa";
             } else if (diff > 0) {
-                // A가 더 저렴 (현재 레벨이 이득)
                 diffBox.innerHTML = `현재 레벨이 평균 <span style="color:#00e676">${diff.toFixed(1)}G</span> 더 저렴함<br>
                                      <span style="font-size:0.85rem; color:#777;">(약 ${rolls}회 리롤 차이)</span>`;
                 diffBox.style.color = "#fff";
             } else {
-                // B가 더 저렴 (레벨업이 이득)
                 diffBox.innerHTML = `레벨업이 평균 <span style="color:#ff5252">${Math.abs(diff).toFixed(1)}G</span> 더 저렴함<br>
                                      <span style="font-size:0.85rem; color:#777;">(약 ${rolls}회 리롤 차이)</span>`;
                 diffBox.style.color = "#fff";
@@ -265,14 +266,12 @@
             if(!shopOdds[level]) return 0;
             let tierRate = shopOdds[level][cost] / 100;
             let totalTypes = 13 + unlockCount;
-            // 0.9는 다른 기물도 같이 팔려나가는 평균적인 상황을 가정한 보정값
             let estimatedTotalPool = totalTypes * poolSizes[cost] * 0.9; 
             return tierRate * (remain / estimatedTotalPool);
         }
 
         function getExpGold(prob) {
             if(prob <= 0.0001) return 999;
-            // 상점 한번(5슬롯)에 하나라도 뜰 확률 (1 - 전부 꽝일 확률)
             let shopProb = 1 - Math.pow((1 - prob), 5);
             return (1 / shopProb) * 2;
         }
@@ -283,7 +282,6 @@
             document.getElementById('luck-result').innerText = msgs[r];
         }
 
-        // 초기화
         updateSliderMax();
         calculateLogic();
     </script>
