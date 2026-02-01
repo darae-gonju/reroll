@@ -55,9 +55,12 @@
         .val-text { color: #fff; }
         .sub-desc { margin: 0; font-size: 0.8rem; color: #888; text-align: right; font-weight: bold; }
         
-        /* 푸터 (라이선스) */
+        /* 푸터 */
         footer { margin-top: 60px; padding-bottom: 40px; border-top: 1px solid #333; padding-top: 20px; }
         .legal-text { font-size: 0.65rem; color: #444; line-height: 1.5; text-align: left; padding: 0 10px; }
+        
+        /* 광고 영역 (숨김 처리) */
+        .ad-container { margin: 20px 0; min-height: 0px; text-align: center; overflow: hidden; }
     </style>
 </head>
 <body>
@@ -81,8 +84,7 @@
         
         <hr style="border-color: #333; margin: 20px 0;">
 
-        <div style="margin: 15px 0; background: #252525; padding: 15px; border-radius: 10px; font-size: 0.8rem; color: #666;">
-            (광고 배너 영역)
+        <div class="ad-container">
             </div>
 
         <div style="text-align: left; background:#2a2a2a; padding:10px; border-radius:10px; margin-bottom:15px; border:1px solid #444;">
@@ -119,7 +121,7 @@
     </div>
 
     <div style="margin-bottom: 40px;">
-        <a href="https://www.buymeacoffee.com/" target="_blank" 
+        <a href="https://www.buymeacoffee.com/본인아이디" target="_blank" 
            style="background: #FFDD00; color: #000; padding: 12px 25px; text-decoration: none; border-radius: 30px; font-weight: bold; display:inline-block; box-shadow: 0 5px 15px rgba(255,221,0,0.3);">
            ☕ 개발자에게 커피 한잔 사주기
         </a>
@@ -157,48 +159,42 @@
         let unlockCount = 0;
         let MAX_POOL = 25; // 초기값 2코(25장)
 
-        // === 탭 변경 함수 ===
+        // === 탭 변경 ===
         function changeMode(mode, btn) {
             currentMode = mode;
             
-            // 버튼 활성화 스타일 변경
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // 모드별 설정 변경
             const title = document.getElementById('calc-title');
             const uSlider = document.getElementById('unlock-slider');
             const uLabel = document.getElementById('unlock-label');
             
             if (mode === 2) {
-                // 2코스트 모드
                 title.innerText = "⚖️ 6렙 칠까? 7렙 갈까?";
                 uLabel.innerText = "🔓 해금한 2코 챔피언 수";
                 MAX_POOL = 25;
                 uSlider.max = 6;
             } else if (mode === 3) {
-                // 3코스트 모드
                 title.innerText = "⚖️ 7렙 칠까? 8렙 갈까?";
                 uLabel.innerText = "🔓 해금한 3코 챔피언 수";
                 MAX_POOL = 18;
                 uSlider.max = 5;
             } else {
-                // 4코스트 (준비중)
                 title.innerText = "⚖️ 8렙 칠까? 9렙 갈까?";
                 renderResult("🚧 준비중", "다음 업데이트 예정", "다른 탭을 이용해주세요", "#555");
                 return;
             }
 
-            // 해금 슬라이더 값 보정 (모드별 최대치가 다르므로)
             if (unlockCount > uSlider.max) unlockCount = parseInt(uSlider.max);
             uSlider.value = unlockCount;
             
-            updateLimits();      // 슬라이더 제한 재설정
-            updateUnlockText();  // 해금 텍스트 갱신
-            calculate();         // 계산 실행
+            updateLimits();      
+            updateUnlockText();  
+            calculate();         
         }
 
-        // === 입력값 변경 리스너 ===
+        // === 입력값 변경 ===
         const mySlider = document.getElementById('my-slider');
         const takenSlider = document.getElementById('taken-slider');
 
@@ -222,38 +218,34 @@
             calculate();
         });
 
-        // === 스마트 슬라이더 제한 (오류 방지) ===
+        // === 슬라이더 제한 ===
         function updateLimits() {
-            // 경쟁자가 가져갈 수 있는 최대치 = 전체 풀 - 내가 가진 거
             let maxTaken = MAX_POOL - myCopies;
             if (maxTaken < 0) maxTaken = 0;
             
             takenSlider.max = maxTaken;
 
-            // 현재 값이 범위를 넘어가면 자동 조정
             if (takenCopies > maxTaken) {
                 takenCopies = maxTaken;
                 takenSlider.value = takenCopies;
                 document.getElementById('taken-val').innerText = takenCopies + "장";
             }
             
-            // 남은 매물 표시
             let remain = MAX_POOL - myCopies - takenCopies;
             let rText = document.getElementById('remain-text');
             rText.innerText = `남은 매물: ${remain}장 / ${MAX_POOL}장`;
             
-            // 매물이 위험 수준이면 빨간색
             if (remain <= 2) rText.style.color = "#ff5252";
             else rText.style.color = "#00e676";
         }
 
         function updateUnlockText() {
-            let base = 13; // 기본 종류
+            let base = 13; 
             let total = base + unlockCount;
             document.getElementById('unlock-val').innerText = `${unlockCount}개 (총 ${total}종)`;
         }
 
-        // === 핵심 계산 로직 (Set 16 반영) ===
+        // === 핵심 계산 로직 (유저 판단 존중 버전) ===
         function calculate() {
             if (currentMode === 4) return;
 
@@ -261,18 +253,16 @@
             let lowLvlName, highLvlName;
 
             if (currentMode === 2) {
-                // 2코스트 세팅
                 COPIES = 25; PROB_LOW = 0.40; PROB_HIGH = 0.30; BASE_TYPES = 13;
                 lowLvlName = "6렙"; highLvlName = "7렙";
             } else {
-                // 3코스트 세팅
                 COPIES = 18; PROB_LOW = 0.40; PROB_HIGH = 0.32; BASE_TYPES = 13;
                 lowLvlName = "7렙"; highLvlName = "8렙";
             }
             
             let totalTypes = BASE_TYPES + unlockCount;
             const TOTAL_POOL_SIZE = COPIES * totalTypes;
-            const CURRENT_POOL_SIZE = TOTAL_POOL_SIZE * 0.75; // 평균 75% 잔여 가정
+            const CURRENT_POOL_SIZE = TOTAL_POOL_SIZE * 0.75; 
 
             const target = 9; 
             let needed = target - myCopies;
@@ -287,7 +277,7 @@
                 return; 
             }
 
-            // [기댓값 계산]
+            // 기댓값 계산
             let prob_hit_unit = remain / CURRENT_POOL_SIZE;
             let realProbLow = PROB_LOW * prob_hit_unit;
             let realProbHigh = PROB_HIGH * prob_hit_unit;
@@ -302,19 +292,11 @@
             let absGold = Math.abs(Math.round(diffGold));
             let absRolls = Math.abs(diffRolls).toFixed(1);
 
-            // ============ [스마트 판단 로직] ============
+            // ============ [수정된 판단 로직] ============
+            // "1장 남았을 때 강제 종료" 로직을 삭제했습니다.
+            // 이제 1장 남았을 때도 아래의 골드 효율 계산을 그대로 따라갑니다.
 
-            // [조건 A] 마무리 각 (1장 남음) -> 무조건 바닥롤
-            if (needed === 1) {
-                mainT = "⚡ 마무리 각";
-                subT = "(딱 1장 남음)";
-                msgT = `🛑 업 누르지 마세요! (${lowLvlName} 바닥롤)`;
-                color = "#ff1744"; 
-                renderResult(mainT, subT, msgT, color);
-                return;
-            }
-
-            // [조건 B] 매물이 말랐을 때 (3장 이하) -> 업 금지
+            // [예외 3] 매물이 위험 수준 (3장 이하) -> 이건 경고 필요
             if (remain <= 3) {
                 mainT = "💀 매물 마름";
                 subT = `(겨우 ${remain}장 남음)`;
@@ -324,7 +306,7 @@
                 return;
             }
 
-            // [조건 C] 골드 효율에 따른 판단
+            // [골드 효율 판단]
             if (diffGold > 30) {
                 mainT = `${absGold}G 손해`;
                 subT = `(리롤 약 ${absRolls}회 낭비)`;
@@ -355,7 +337,7 @@
             renderResult(mainT, subT, msgT, color);
         }
 
-        // 결과 화면 출력 함수
+        // 결과 출력
         function renderResult(main, sub, msg, color) {
             const box = document.getElementById('result-box');
             document.getElementById('res-main').innerText = main;
@@ -365,7 +347,7 @@
             box.style.borderColor = color; 
         }
 
-        // === 운세 게임 로직 ===
+        // === 운세 게임 ===
         function testLuck() {
             const r = document.getElementById('luck-result'); 
             r.innerText = "🎲 굴리는 중...";
@@ -386,7 +368,7 @@
             }, 500);
         }
         
-        // 초기화 실행
+        // 초기화
         updateLimits();
         updateUnlockText();
         calculate(); 
